@@ -143,7 +143,7 @@ export function buildResourceReport(movie, resources = []) {
 export function buildSourceRootEntries(options = {}) {
   const settings = normalizeOptions(options);
   const entries = settings.sources.map((id) => ({ id, name: sourceLabel(id) }));
-  entries.push({ id: 'search', name: 'Search' });
+  entries.push({ id: 'search', name: sourceLabel('search') });
   return entries;
 }
 

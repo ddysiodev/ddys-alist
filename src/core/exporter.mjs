@@ -19,7 +19,7 @@ export async function exportLibrary(options = {}, runtime = {}) {
   await fs.mkdir(outputDir, { recursive: true });
   await writeJson(path.join(outputDir, MARKER_FILE), {
     package: 'ddys-alist',
-    version: '0.1.0',
+    version: '0.1.1',
     generatedAt: new Date().toISOString()
   });
 

@@ -154,7 +154,7 @@ function renderHome(settings) {
 function buildManifest(settings) {
   return {
     name: 'ddys-alist',
-    version: '0.1.0',
+    version: '0.1.1',
     description: 'DDYS API virtual WebDAV storage for AList and OpenList',
     icon: `${settings.publicBase}/icon.png`,
     webdav: `${settings.publicBase}${settings.davPath}`,

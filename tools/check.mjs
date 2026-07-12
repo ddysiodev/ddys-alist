@@ -67,7 +67,7 @@ async function main() {
 
   const pkg = JSON.parse(await read('package.json'));
   assert(pkg.name === 'ddys-alist', 'package name mismatch.');
-  assert(pkg.version === '0.1.0', 'package version mismatch.');
+  assert(pkg.version === '0.1.1', 'package version mismatch.');
   assert(pkg.type === 'module', 'package must be ESM.');
   assert(pkg.bin && pkg.bin['ddys-alist'], 'CLI bin missing.');
 
@@ -92,7 +92,7 @@ async function main() {
   }
 
   const client = await read('src/core/client.mjs');
-  for (const fragment of ['/latest', '/hot', '/movies', '/search', '/sources', '/related', 'Authorization', 'AbortController', 'movieArrayItems']) {
+  for (const fragment of ['/latest', '/hot', '/movies', '/search', '/sources', '/related', 'Authorization', 'AbortController', 'movieArrayItems', 'hasResourceArray', 'collectResourceArrays']) {
     assert(client.includes(fragment), `DDYS client missing ${fragment}.`);
   }
 

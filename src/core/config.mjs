@@ -1,4 +1,4 @@
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
 
 export const SOURCE_DEFS = Object.freeze({
   latest: { id: 'latest', label: '最新更新', aliases: ['latest'], kind: 'list', mediaType: 'mixed' },

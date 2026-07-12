@@ -75,7 +75,7 @@ export function createDdysClient(options = {}, runtime = {}) {
 
   async function getJson(path, query, signal) {
     const url = buildUrl(settings.apiBase, path, query);
-    const cacheKey = `${url}|auth:${settings.apiKey ? '1' : '0'}`;
+    const cacheKey = `${url}|auth:${settings.apiKey}`;
     if (settings.enableCache && cache.has(cacheKey)) {
       const entry = cache.get(cacheKey);
       if (entry.expiresAt > Date.now()) return cloneJson(entry.value);
@@ -156,10 +156,10 @@ function readPagedMovies(root, settings) {
     : {};
   return {
     data: movies,
-    total: readInt(meta, movies.length, 'total', 'count'),
-    page: readInt(meta, 1, 'page', 'current_page'),
-    perPage: readInt(meta, movies.length || settings.pageSize, 'per_page', 'perPage', 'limit'),
-    totalPages: readInt(meta, 1, 'total_pages', 'last_page', 'totalPages')
+    total: readInt(meta, movies.length, 'total', 'count', 'totalCount'),
+    page: readInt(meta, 1, 'page', 'current_page', 'currentPage'),
+    perPage: readInt(meta, movies.length || settings.pageSize, 'per_page', 'perPage', 'pageSize', 'limit'),
+    totalPages: readInt(meta, 1, 'total_pages', 'last_page', 'totalPages', 'lastPage', 'pages')
   };
 }
 
@@ -194,7 +194,17 @@ export function readMovie(element, settings = DEFAULTS) {
 function readSourceGroups(data) {
   const groups = [];
   if (Array.isArray(data)) {
-    addGroup(groups, 'Online', data);
+    if (data.some(hasResourceArray)) {
+      for (const [index, group] of data.entries()) {
+        if (hasResourceArray(group)) {
+          addGroup(groups, readGroupName(group, index), collectResourceArrays(group));
+        } else {
+          addGroup(groups, `Line ${index + 1}`, [group]);
+        }
+      }
+    } else {
+      addGroup(groups, 'Online', data);
+    }
     return groups;
   }
   if (!data || typeof data !== 'object') return groups;
@@ -204,7 +214,7 @@ function readSourceGroups(data) {
   addGroup(groups, 'Cloud Drive', collectArrays(data, 'cloud', 'netdisk', 'drive'));
   addGroup(groups, 'Magnet', collectArrays(data, 'magnet', 'magnets'));
 
-  const used = new Set(['online', 'play', 'playlist', 'episodes', 'items', 'download', 'downloads', 'cloud', 'netdisk', 'drive', 'magnet', 'magnets']);
+  const used = new Set(['online', 'play', 'playlist', 'episodes', 'items', 'resources', 'urls', 'list', 'download', 'downloads', 'cloud', 'netdisk', 'drive', 'magnet', 'magnets']);
   for (const [key, value] of Object.entries(data)) {
     if (!used.has(key.toLowerCase()) && Array.isArray(value)) addGroup(groups, readableGroupName(key), value);
   }
@@ -235,7 +245,7 @@ function readResource(element, index = 0) {
   if (!element || typeof element !== 'object' || Array.isArray(element)) {
     return { name: '', url: '', isDirect: false, isMagnet: false, headers: {} };
   }
-  const url = firstString(element, 'url', 'link', 'href', 'play_url', 'playUrl', 'download_url', 'downloadUrl', 'magnet', 'ed2k');
+  const url = firstString(element, 'url', 'link', 'href', 'src', 'file', 'play_url', 'playUrl', 'download_url', 'downloadUrl', 'magnet', 'ed2k');
   let label = joinValues(firstValue(element, 'name', 'title', 'label', 'episode', 'quality', 'format'));
   if (!label) label = `Resource ${index + 1}`;
   const code = firstString(element, 'extract_code', 'code', 'password', 'passcode');
@@ -250,6 +260,20 @@ function collectArrays(element, ...keys) {
     if (Array.isArray(value)) out.push(...value);
   }
   return out;
+}
+
+function hasResourceArray(element) {
+  if (!element || typeof element !== 'object' || Array.isArray(element)) return false;
+  return ['items', 'resources', 'episodes', 'playlist', 'play', 'urls', 'list', 'online', 'download', 'downloads', 'cloud', 'netdisk', 'drive', 'magnet', 'magnets']
+    .some((key) => Array.isArray(getProperty(element, key)));
+}
+
+function collectResourceArrays(element) {
+  return collectArrays(element, 'items', 'resources', 'episodes', 'playlist', 'play', 'urls', 'list', 'online', 'download', 'downloads', 'cloud', 'netdisk', 'drive', 'magnet', 'magnets');
+}
+
+function readGroupName(group, index) {
+  return firstString(group, 'name', 'title', 'label', 'source', 'type') || `Line ${index + 1}`;
 }
 
 function unwrapData(root) {

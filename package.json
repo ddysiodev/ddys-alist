@@ -1,6 +1,6 @@
 {
   "name": "ddys-alist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AList/OpenList WebDAV adapter and virtual media library for the DDYS API.",
   "type": "module",
   "private": true,

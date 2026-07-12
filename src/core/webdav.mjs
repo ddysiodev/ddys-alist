@@ -171,7 +171,7 @@ async function resolveSourceNode(sourceId, rest, settings, client, signal) {
 async function resolveSearchNode(segments, settings, client, signal) {
   const searchPath = joinDav(settings.davPath, sourceDirectoryName('search'));
   if (segments.length === 1) {
-    return dirNode('Search', searchPath, async () => searchRootChildren(settings));
+    return dirNode(sourceLabel('search'), searchPath, async () => searchRootChildren(settings));
   }
 
   const query = segments[1];
@@ -186,7 +186,7 @@ async function resolveSearchNode(segments, settings, client, signal) {
 
   if (segments.length === 2 || segments.length === 3 && parsedPage) {
     const path = pageNumber > 1 ? joinDav(queryPath, `page-${pageNumber}`) : queryPath;
-    return dirNode(`Search ${query}`, path, async () => {
+    return dirNode(`搜索 ${query}`, path, async () => {
       const page = await listSourceMovies(client, 'search', settings, { query, page: pageNumber, signal });
       return sourceListChildren('search', page, pageNumber, settings, query);
     });

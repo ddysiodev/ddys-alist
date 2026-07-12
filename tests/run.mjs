@@ -43,9 +43,13 @@ test('DDYS client reads latest and detail resources', async () => {
   assert.equal(latest.length, 2);
   const movies = await client.movies('movie');
   assert.equal(movies.data.length, 1);
+  assert.equal(movies.totalPages, 2);
   const bundle = await client.detailBundle('alpha');
   assert.equal(bundle.movie.title, 'Alpha');
   assert.equal(bundle.sourceGroups[0].items[0].isDirect, true);
+  const grouped = await client.detailBundle('beta');
+  assert.equal(grouped.sourceGroups[0].name, '线路一');
+  assert.equal(grouped.sourceGroups[0].items[0].url, 'https://cdn.example/beta-01.m3u8');
 });
 
 test('WebDAV root PROPFIND lists stable source directories', async () => {
@@ -55,6 +59,7 @@ test('WebDAV root PROPFIND lists stable source directories', async () => {
   assert.equal(response.status, 207);
   assert.match(body, /最新更新/u);
   assert.match(body, /电影/u);
+  assert.match(body, /搜索/u);
 });
 
 test('WebDAV enforces optional authorization', async () => {
@@ -133,7 +138,9 @@ test('HTTP handler exposes AList and OpenList helper manifests', async () => {
   assert.equal(storageJson.addition.address, 'http://local/dav');
   const manifest = await handler(new Request('http://local/manifest.json'));
   assert.equal(manifest.status, 200);
-  assert.equal((await manifest.json()).name, 'ddys-alist');
+  const manifestJson = await manifest.json();
+  assert.equal(manifestJson.name, 'ddys-alist');
+  assert.equal(manifestJson.version, '0.1.1');
 });
 
 test('WebDAV search path returns query results', async () => {
@@ -142,6 +149,13 @@ test('WebDAV search path returns query results', async () => {
   const body = await response.text();
   assert.equal(response.status, 207);
   assert.match(body, /Alpha/u);
+});
+
+test('WebDAV accepts localized page directory names', async () => {
+  const handler = createWebDavHandler({}, { fetch: mockFetch });
+  const response = await handler(new Request(`http://local/dav/${encodeURIComponent('电影')}/${encodeURIComponent('第2页')}/`, { method: 'PROPFIND', headers: { depth: '1' } }));
+  assert.equal(response.status, 207);
+  assert.match(await response.text(), /Alpha/u);
 });
 
 test('export writes STRM, NFO, resources, and manifest', async () => {
@@ -237,7 +251,7 @@ async function mockFetch(url) {
     const data = type === 'series'
       ? [movie('beta', 'Beta', { type_name: 'series' })]
       : [movie('alpha', 'Alpha')];
-    return json({ data: { items: data, pagination: { total: data.length, page: 1, per_page: 24, total_pages: 1 } } });
+    return json({ data: { items: data, pagination: { total: data.length, currentPage: Number(parsed.searchParams.get('page') || 1), pageSize: 24, pages: 2 } } });
   }
   if (pathName.endsWith('/search')) {
     return json({ data: [movie('alpha', 'Alpha')], meta: { total: 1, page: 1, per_page: 24, total_pages: 1 } });
@@ -262,7 +276,7 @@ async function mockFetch(url) {
     });
   }
   if (pathName.endsWith('/movies/beta/sources')) {
-    return json({ data: { play: [{ name: 'EP01', url: 'https://cdn.example/beta-01.m3u8' }] } });
+    return json({ data: [{ name: '线路一', items: [{ name: 'EP01', url: 'https://cdn.example/beta-01.m3u8' }] }] });
   }
   if (pathName.endsWith('/related')) {
     return json({ data: [] });
