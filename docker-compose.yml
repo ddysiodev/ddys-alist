@@ -1,0 +1,19 @@
+services:
+  ddys-alist:
+    build: .
+    container_name: ddys-alist
+    restart: unless-stopped
+    ports:
+      - "3219:3219"
+    environment:
+      DDYS_API_BASE: https://ddys.io/api/v1
+      DDYS_SITE_BASE: https://ddys.io
+      DDYS_PUBLIC_BASE: http://127.0.0.1:3219
+      DDYS_DAV_PATH: /dav
+      DDYS_ALIST_MOUNT_PATH: /DDYS
+      DDYS_AUTH_USER: ddys
+      DDYS_AUTH_TOKEN: ""
+      DDYS_AUTH_PASSWORD: ""
+      DDYS_PAGE_SIZE: "24"
+      DDYS_HOME_LIMIT: "24"
+      DDYS_CACHE_MINUTES: "10"

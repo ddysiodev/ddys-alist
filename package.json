@@ -1,0 +1,43 @@
+{
+  "name": "ddys-alist",
+  "version": "0.1.0",
+  "description": "AList/OpenList WebDAV adapter and virtual media library for the DDYS API.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ddys-alist": "./cli/ddys-alist.mjs"
+  },
+  "types": "./index.d.ts",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./config": "./src/core/config.mjs",
+    "./client": "./src/core/client.mjs",
+    "./webdav": "./src/core/webdav.mjs",
+    "./exporter": "./src/core/exporter.mjs"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "serve": "node cli/ddys-alist.mjs serve",
+    "export": "node cli/ddys-alist.mjs export",
+    "check": "node tools/check.mjs",
+    "test": "node tests/run.mjs",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-package.ps1"
+  },
+  "keywords": [
+    "ddys",
+    "alist",
+    "openlist",
+    "webdav",
+    "strm",
+    "nfo",
+    "infuse",
+    "kodi",
+    "emby",
+    "jellyfin",
+    "plex"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
